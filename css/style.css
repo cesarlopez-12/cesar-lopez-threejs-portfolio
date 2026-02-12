@@ -1,0 +1,109 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Pixelify Sans", sans-serif;
+}
+
+/*experience styles*/
+
+#experience{
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+#experience-canvas{
+    width: 100%;
+    height: 100%;
+
+}
+
+/*Utilities*/
+.hidden{
+    display: none;
+}
+
+/* Modal styles */
+.modal{
+    z-index: 999;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 700px;
+    background-color: #ec5936;
+    border: 3px solid #fff;
+    color: #fff;
+
+
+}
+
+.modal-content{
+    padding: 12px;
+}
+
+.modal-header{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    
+}
+
+
+.modal-exit-button{
+    background-color: transparent;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-title{
+   padding: 4px 8px;
+   
+}
+
+.modal-project-visit-button{
+    display: inline-block;
+    margin-bottom: 12px;
+    background-color: transparent;
+    border: 2px solid #fff;
+    color: #fff;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.modal-image {
+    width: 250px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 25%;
+    margin: 0 auto;
+    border: 3px solid white;
+}
+
+.tech-list {
+    margin-top: 20px;
+    padding-left: 20px;
+    line-height: 1.8;
+    font-size: 14px;
+}
+
+.tech-list li {
+    margin-bottom: 10px;
+}
+
+.modal-title-h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
