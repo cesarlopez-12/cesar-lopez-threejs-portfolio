@@ -8,6 +8,11 @@ const scene = new THREE.Scene();
 const raycaster = new THREE.Raycaster();
 const Pointer = new THREE.Vector2();
 let intersectObjects = [];
+
+const centeredAnimals = {};
+const animalsToFix = [];
+const animalNames = ['pikachu', 'chick', 'llama', 'duck', 'lapras', 'tortoise', 'cat'];
+
 /*let isMoving = false;*/
 
 let characterMesh = null;
@@ -56,9 +61,37 @@ loader.load('./public/ProyectoWeb.glb', function (gltf) {
             child.material.metalness = 0;
         }
 
+        const root = getRootObject(child);
+
+        if (root && animalNames.includes(root.name)) {
+            if (!animalsToFix.includes(root)) {
+                animalsToFix.push(root);
+            }
+        }
+
     });
 
-    
+    animalsToFix.forEach(animal => {
+
+        const container = new THREE.Group();
+        scene.add(container);
+
+        const box = new THREE.Box3().setFromObject(animal);
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+
+        // Centrar modelo dentro del contenedor
+        animal.position.sub(center);
+        container.add(animal);
+
+        // Regresar a su posición original
+        container.position.copy(center);
+
+        centeredAnimals[animal.name] = container;
+
+        console.log("Animal listo:", animal.name);
+    });
+
     setupCharacter();
 
 }, undefined, function (error) {
@@ -249,6 +282,14 @@ function moverCharacter(targetPosition, targetRotation) {
 
     character.isMoving = true;
 
+    
+    let rotationDiff =
+    (((targetRotation - characterContainer.rotation.y) % (2 * Math.PI)) +
+    (2 * Math.PI)) % (2 * Math.PI) -
+    Math.PI;
+
+    let finalRotation = characterContainer.rotation.y + rotationDiff;
+
     const startY = characterContainer.position.y;
 
     const t1 = gsap.timeline({
@@ -267,7 +308,7 @@ function moverCharacter(targetPosition, targetRotation) {
 
     
     t1.to(characterContainer.rotation, {
-        y: targetRotation,
+        y: finalRotation,
         duration: 0.1,
         ease: "power2.inOut"
     }, 0);
@@ -329,22 +370,22 @@ function onKeyDown(event) {
         case 'd':
         case 'arrowright':
             targetPosition.z -= character.moveDistance;
-            targetRotation = - Math.PI / 2; // 90 grados en radianes
+            targetRotation = Math.PI / 2; // 90 grados en radianes
             break
         case 'a':
         case 'arrowleft':
             targetPosition.z += character.moveDistance;
-            targetRotation = Math.PI / 2; // 180 grados en radianes
+            targetRotation = - Math.PI / 2; // 180 grados en radianes
             break
         case 'w':
         case 'arrowup':
             targetPosition.x -= character.moveDistance;
-            targetRotation = 0; // 90 grados en radianes
+            targetRotation = Math.PI; // 90 grados en radianes
             break
         case 's':
         case 'arrowdown':
             targetPosition.x += character.moveDistance;
-            targetRotation = Math.PI; // 270 grados en radianes        
+            targetRotation = 0; // 270 grados en radianes        
             break
         default:
             return; // Salir si no es una tecla de movimiento
@@ -361,6 +402,41 @@ window.addEventListener('click', onClick);
 // window.addEventListener( 'pointermove', onPointerMove );
 window.addEventListener('keydown', onKeyDown);
 
+function jumpCharacter(name) {
+
+    const obj = centeredAnimals[name];
+    if (!obj) return;
+
+    const startY = obj.position.y;
+
+    const tl = gsap.timeline();
+
+    tl.to(obj.scale, {
+        x: 1.15,
+        y: 0.85,
+        z: 1.15,
+        duration: 0.1
+    });
+
+    tl.to(obj.position, {
+        y: startY + 2,
+        duration: 0.25,
+        ease: "power2.out"
+    });
+
+    tl.to(obj.position, {
+        y: startY,
+        duration: 0.35,
+        ease: "bounce.out"
+    });
+
+    tl.to(obj.scale, {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.2
+    });
+}
 
 function onClick(event) {
     Pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -380,6 +456,11 @@ function onClick(event) {
 
     if (modalContent[root.name]) {
         showModal(root.name);
+    }
+
+    if (animalNames.includes(root.name)) {
+    jumpCharacter(root.name);
+    return;
     }
 
 }
