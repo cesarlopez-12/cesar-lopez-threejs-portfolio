@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
+import { Octree } from "three/addons/math/Octree.js";
+import { Capsule } from "three/addons/math/Capsule.js";
 
 
 const scene = new THREE.Scene();
@@ -13,6 +14,26 @@ const centeredAnimals = {};
 const animalsToFix = [];
 const animalNames = ['pikachu', 'chick', 'llama', 'duck', 'lapras', 'tortoise', 'cat'];
 
+
+const GRAVITY = 20;
+const CAPSULE_RADIUS = 2;
+const CAPSULE_HEIGHT = 0.5;
+const JUMP_HEIGHT = 9;
+const MOVE_SPEED = 3;
+
+
+const colliderOctree = new Octree();
+const playerCollider = new Capsule(
+  new THREE.Vector3(0, CAPSULE_RADIUS, 0),
+  new THREE.Vector3(0, CAPSULE_HEIGHT, 0),
+  CAPSULE_RADIUS
+);
+
+let playerVelocity = new THREE.Vector3();
+let playerOnFloor = false;
+let originalCharacterPosition = new THREE.Vector3();
+
+
 /*let isMoving = false;*/
 
 let characterMesh = null;
@@ -22,9 +43,9 @@ scene.add(characterContainer);
 
 let character = {
     instance: null,
-    moveDistance: 5,
-    jumpHeight: 4,
-    moveDuration: 0.3, // Duración del movimiento en segundos
+    // moveDistance: 5,
+    // jumpHeight: 4,
+    // moveDuration: 0.3, // Duración del movimiento en segundos
     isMoving: false
     //moveDistance: 0.2,
     //moveDuration: 0.4,
@@ -33,7 +54,7 @@ let character = {
     /*isMoving: false*/
 };
 
-
+let targetRotation = 0;
 
 const sizes = {
     width: window.innerWidth,
@@ -43,7 +64,7 @@ const sizes = {
 
 const loader = new GLTFLoader();
 
-loader.load('./public/ProyectoWeb.glb', function (gltf) {
+loader.load('./public/ProyectoWebThree.glb', function (gltf) {
 
     scene.add(gltf.scene);
 
@@ -52,6 +73,13 @@ loader.load('./public/ProyectoWeb.glb', function (gltf) {
         // SOLO guardar referencia — NO mover nada aquí
         if (child.name === 'character') {
             characterMesh = child;
+            playerCollider.start.copy(child.position).add(new THREE.Vector3(0, -CAPSULE_RADIUS / 2, 0));
+            playerCollider.end.copy(child.position).add(new THREE.Vector3(0, -CAPSULE_HEIGHT / 2, 0));
+        }
+
+        if (child.name === "collider") {
+        colliderOctree.fromGraphNode(child);
+        child.visible = false;
         }
 
         if (child.isMesh) {
@@ -276,6 +304,7 @@ camera.updateProjectionMatrix();
 controls.target.set(80, -30, -190);
 controls.update();
 
+/*
 function moverCharacter(targetPosition, targetRotation) {
 
     if (character.isMoving) return;
@@ -322,7 +351,7 @@ function moverCharacter(targetPosition, targetRotation) {
         repeat: 1
     }, '<');
 }
-
+*/
 
 function setupCharacter() {
 
@@ -344,6 +373,13 @@ function setupCharacter() {
 
     //Colocar el contenedor donde estaba el personaje
     characterContainer.position.copy(center);
+    originalCharacterPosition.copy(characterContainer.position);
+
+    // 🔥 SINCRONIZAR COLLIDER CON EL PERSONAJE
+    playerCollider.start.copy(characterContainer.position);
+    playerCollider.end.copy(characterContainer.position).add(
+        new THREE.Vector3(0, CAPSULE_HEIGHT, 0)
+    );
 
     //Ahora el personaje REAL será el contenedor
     character.instance = characterContainer;
@@ -352,45 +388,126 @@ function setupCharacter() {
    //characterContainer.position.y += 9;
 }
 
+function playerCollisions() {
+  const result = colliderOctree.capsuleIntersect(playerCollider);
+  playerOnFloor = false;
+
+  if (result) {
+    playerOnFloor = result.normal.y > 0;
+    playerCollider.translate(result.normal.multiplyScalar(result.depth));
+
+    if (playerOnFloor) {
+      character.isMoving = false;
+      playerVelocity.y = 0;
+      playerVelocity.x = 0;
+      playerVelocity.z = 0;
+    }
+  }
+}
+
+
+function updatePlayer() {
+  if (!character.instance) return;
+    
+  if (character.instance.position.y < -20) {
+    respawnCharacter();
+    return;
+  }
+
+  if (!playerOnFloor) {
+    playerVelocity.y -= GRAVITY * 0.035;
+  }
+
+  if (playerOnFloor){
+    playerVelocity.x *= 0.8;
+    playerVelocity.z *= 0.8;
+  }
+
+  playerCollider.translate(playerVelocity.clone().multiplyScalar(0.035));
+
+  playerCollisions();
+
+  character.instance.position.copy(playerCollider.start);
+  character.instance.position.y += CAPSULE_HEIGHT * 3.2; // Ajustar para que el personaje esté a la altura correcta
+
+  let rotationDiff =
+    ((((targetRotation - character.instance.rotation.y) % (2 * Math.PI)) +
+      3 * Math.PI) %
+      (2 * Math.PI)) -
+    Math.PI;
+  let finalRotation = character.instance.rotation.y + rotationDiff;
+
+  character.instance.rotation.y = THREE.MathUtils.lerp(
+    character.instance.rotation.y,
+    finalRotation,
+    0.4
+  );
+}
+
+function respawnCharacter() {
+
+    playerCollider.start.copy(originalCharacterPosition);
+    playerCollider.end.copy(originalCharacterPosition).add(
+        new THREE.Vector3(0, CAPSULE_HEIGHT, 0)
+    );
+
+    playerVelocity.set(0, 0, 0);
+
+    characterContainer.position.copy(originalCharacterPosition);
+}
 
 
 function onKeyDown(event) {
     
-    if (character.isMoving) return; // Evitar iniciar otro movimiento mientras el personaje ya se está moviendo
+    // if (character.isMoving) return; // Evitar iniciar otro movimiento mientras el personaje ya se está moviendo
 
     /*const targetPosition = new THREE.Vector3().copy(character.instance.position);
     let targetRotation = 0;*/
 
-    const targetPosition = characterContainer.position.clone();
+    // const targetPosition = characterContainer.position.clone();
 
-    let targetRotation = characterContainer.rotation.y;
+    // let targetRotation = characterContainer.rotation.y;
 
-    console.log(event);
+    console.log(event); 
     switch (event.key.toLowerCase()) {
         case 'd':
         case 'arrowright':
-            targetPosition.z -= character.moveDistance;
+            playerVelocity.z -= MOVE_SPEED;
             targetRotation = Math.PI / 2; // 90 grados en radianes
+            if (playerOnFloor) {
+                playerVelocity.y = JUMP_HEIGHT;
+            }
             break
         case 'a':
         case 'arrowleft':
-            targetPosition.z += character.moveDistance;
+            playerVelocity.z += MOVE_SPEED;
             targetRotation = - Math.PI / 2; // 180 grados en radianes
+            if (playerOnFloor) {
+                playerVelocity.y = JUMP_HEIGHT;
+            }
             break
         case 'w':
         case 'arrowup':
-            targetPosition.x -= character.moveDistance;
+            playerVelocity.x -= MOVE_SPEED;
             targetRotation = Math.PI; // 90 grados en radianes
+            if (playerOnFloor) {
+                playerVelocity.y = JUMP_HEIGHT;
+            }
             break
         case 's':
         case 'arrowdown':
-            targetPosition.x += character.moveDistance;
-            targetRotation = 0; // 270 grados en radianes        
+            playerVelocity.x += MOVE_SPEED;
+            targetRotation = 0; // 270 grados en radianes 
+            if (playerOnFloor) {
+                playerVelocity.y = JUMP_HEIGHT;
+            }       
             break
         default:
             return; // Salir si no es una tecla de movimiento
     }
-    moverCharacter(targetPosition, targetRotation);
+    // moverCharacter(targetPosition, targetRotation);
+    // playerVelocity.y = JUMP_HEIGHT;
+    // character.isMoving = true; // Marcar que el personaje está en movimiento
 }
 
 
@@ -482,6 +599,8 @@ function handleSelection(name) {
 
 
 function animate() {
+    
+    updatePlayer();
 
     // console.log(camera.position);
     raycaster.setFromCamera(Pointer, camera);
