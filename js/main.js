@@ -4,6 +4,54 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Octree } from "three/addons/math/Octree.js";
 import { Capsule } from "three/addons/math/Capsule.js";
 
+const loadingScreen = document.getElementById("loadingScreen");
+const loadingText = document.querySelector(".loading-text");
+const enterButton = document.querySelector(".enter-button");
+
+const manager = new THREE.LoadingManager();
+
+// Configuración de sonidos con Howler.js
+const sounds = {
+    backgroundMusic: new Howl({
+    src: ["./music/pokemon.ogg"], // cambia si es .ogg
+    loop: true,
+    volume: 0.3,
+    preload: true,
+    }),
+
+    chestOpen: new Howl({
+    src: ["./music/projects.ogg"], // cambia si es .ogg
+    volume: 0.6,
+    preload: true,
+    }),
+
+    animalJump: new Howl({
+    src: ["./music/music_pokemon.ogg"], // tu archivo
+    volume: 0.7,
+    preload: true,
+    }),
+    
+    playerJump: new Howl({
+    src: ["./music/jumpsfx.ogg"], // tu archivo
+    volume: 0.8,
+    preload: true,
+    }),
+};
+
+enterButton.addEventListener("click", () => {
+  if (!sounds.backgroundMusic.playing()) {
+    sounds.backgroundMusic.play();
+  }
+
+  gsap.to(loadingScreen, {
+    opacity: 0,
+    duration: 1,
+    onComplete: () => {
+      loadingScreen.remove();
+    }
+  });
+
+});
 
 const scene = new THREE.Scene();
 const raycaster = new THREE.Raycaster();
@@ -65,7 +113,23 @@ const sizes = {
 };
 
 
-const loader = new GLTFLoader();
+const loader = new GLTFLoader(manager);
+
+manager.onLoad = function () {
+  loadingText.style.display = "none";
+  enterButton.style.opacity = "1";
+};
+
+enterButton.addEventListener("click", () => {
+  gsap.to(loadingScreen, {
+    opacity: 0,
+    duration: 1,
+    onComplete: () => {
+      loadingScreen.remove();
+    }
+  });
+});
+
 
 loader.load('./public/ProyectoWebThree.glb', function (gltf) {
 
@@ -481,6 +545,9 @@ function onKeyDown(event) {
             targetRotation = - Math.PI / 2; // 90 grados en radianes
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
+                sounds.playerJump.stop();
+                sounds.playerJump.play();
+                
             }
             break
         case 'a':
@@ -489,6 +556,9 @@ function onKeyDown(event) {
             targetRotation = Math.PI / 2; // 180 grados en radianes
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
+                sounds.playerJump.stop();
+                sounds.playerJump.play();
+                
             }
             break
         case 'w':
@@ -497,6 +567,9 @@ function onKeyDown(event) {
             targetRotation = 0; // 0 grados en radianes
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
+                sounds.playerJump.stop();
+                sounds.playerJump.play();
+                
             }
             break
         case 's':
@@ -505,6 +578,9 @@ function onKeyDown(event) {
             targetRotation = -Math.PI; // 270 grados en radianes 
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
+                sounds.playerJump.stop();
+                sounds.playerJump.play();
+                
             }       
             break
         default:
@@ -525,6 +601,10 @@ window.addEventListener('click', onClick);
 window.addEventListener('keydown', onKeyDown);
 
 function jumpCharacter(name) {
+    
+    if (!sounds.animalJump.playing()) {
+        sounds.animalJump.play();
+    }
 
     const obj = centeredAnimals[name];
     if (!obj) return;
@@ -577,6 +657,11 @@ function onClick(event) {
     // Verificar si el objeto intersectado es uno de los objetos interactivos
 
     if (modalContent[root.name]) {
+        
+        if (!sounds.chestOpen.playing()) {
+            sounds.chestOpen.play();
+        }
+        
         showModal(root.name);
     }
 
