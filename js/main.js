@@ -17,8 +17,8 @@ const animalNames = ['pikachu', 'chick', 'llama', 'duck', 'lapras', 'tortoise', 
 
 const GRAVITY = 20;
 const CAPSULE_RADIUS = 2;
-const CAPSULE_HEIGHT = 0.5;
-const JUMP_HEIGHT = 9;
+const CAPSULE_HEIGHT = 1.55;
+const JUMP_HEIGHT = 10;
 const MOVE_SPEED = 3;
 
 
@@ -28,6 +28,8 @@ const playerCollider = new Capsule(
   new THREE.Vector3(0, CAPSULE_HEIGHT, 0),
   CAPSULE_RADIUS
 );
+
+
 
 let playerVelocity = new THREE.Vector3();
 let playerOnFloor = false;
@@ -55,6 +57,7 @@ let character = {
 };
 
 let targetRotation = 0;
+const cameraOffset = new THREE.Vector3(30, 20, 30); // distancia de la cámara
 
 const sizes = {
     width: window.innerWidth,
@@ -397,10 +400,10 @@ function playerCollisions() {
     playerCollider.translate(result.normal.multiplyScalar(result.depth));
 
     if (playerOnFloor) {
-      character.isMoving = false;
+      //character.isMoving = false;
       playerVelocity.y = 0;
-      playerVelocity.x = 0;
-      playerVelocity.z = 0;
+      //playerVelocity.x = 0;
+      //playerVelocity.z = 0;
     }
   }
 }
@@ -428,7 +431,9 @@ function updatePlayer() {
   playerCollisions();
 
   character.instance.position.copy(playerCollider.start);
-  character.instance.position.y += CAPSULE_HEIGHT * 3.2; // Ajustar para que el personaje esté a la altura correcta
+  
+  // character.instance.position.y += CAPSULE_HEIGHT; // Ajustar para que el personaje esté a la altura correcta
+  character.instance.position.y = playerCollider.start.y + CAPSULE_HEIGHT;
 
   let rotationDiff =
     ((((targetRotation - character.instance.rotation.y) % (2 * Math.PI)) +
@@ -473,7 +478,7 @@ function onKeyDown(event) {
         case 'd':
         case 'arrowright':
             playerVelocity.z -= MOVE_SPEED;
-            targetRotation = Math.PI / 2; // 90 grados en radianes
+            targetRotation = - Math.PI / 2; // 90 grados en radianes
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
             }
@@ -481,7 +486,7 @@ function onKeyDown(event) {
         case 'a':
         case 'arrowleft':
             playerVelocity.z += MOVE_SPEED;
-            targetRotation = - Math.PI / 2; // 180 grados en radianes
+            targetRotation = Math.PI / 2; // 180 grados en radianes
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
             }
@@ -489,7 +494,7 @@ function onKeyDown(event) {
         case 'w':
         case 'arrowup':
             playerVelocity.x -= MOVE_SPEED;
-            targetRotation = Math.PI; // 90 grados en radianes
+            targetRotation = 0; // 0 grados en radianes
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
             }
@@ -497,7 +502,7 @@ function onKeyDown(event) {
         case 's':
         case 'arrowdown':
             playerVelocity.x += MOVE_SPEED;
-            targetRotation = 0; // 270 grados en radianes 
+            targetRotation = -Math.PI; // 270 grados en radianes 
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
             }       
@@ -599,7 +604,27 @@ function handleSelection(name) {
 
 
 function animate() {
-    
+    //Camara sigue al personaje
+        if (character.instance) {
+        const targetCameraPosition = new THREE.Vector3(
+        character.instance.position.x + cameraOffset.x,
+        cameraOffset.y, // altura fija
+        character.instance.position.z + cameraOffset.z
+    );
+
+    // Movimiento suave
+    camera.position.lerp(targetCameraPosition, 0.1);
+
+    // Mirar al personaje (sin modificar Y)
+    camera.lookAt(
+        character.instance.position.x,
+        character.instance.position.y,
+        character.instance.position.z
+    );
+        }
+
+
+
     updatePlayer();
 
     // console.log(camera.position);
