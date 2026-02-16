@@ -5,6 +5,51 @@
     font-family: "Pixelify Sans", sans-serif;
 }
 
+/* Mobile controls */
+
+.mobile-control {
+  z-index: 500;
+  position: absolute;
+  top: 85%;
+  left: 50%;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  background: var(--default-bg);
+  height: 64px;
+  width: 64px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  border: 3px solid white;
+  padding: 8px;
+  transition: background 0.4s ease-in;
+  transition-delay: 0.1s;
+}
+
+.mobile-control:active {
+  background: white;
+}
+
+.mobile-control:active svg rect {
+  fill: #ec5936;
+}
+
+.left-arrow {
+  transform: translate(calc(-100% - 32px), -50%) rotate(270deg);
+}
+
+.right-arrow {
+  transform: translate(32px, -50%) rotate(90deg);
+}
+
+.up-arrow {
+  transform: translate(-50%, calc(-100% - 32px)) rotate(0deg);
+}
+
+.down-arrow {
+  transform: translate(-50%, 32px) rotate(180deg);
+}
+
 /* loader styles */
 .loading-screen {
   position: fixed;
@@ -172,4 +217,10 @@
 .modal-title-h1 {
     font-size: 24px;
     margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+  .mobile-control {
+    display: flex;
+  }
 }

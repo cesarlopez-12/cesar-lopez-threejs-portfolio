@@ -36,12 +36,20 @@ const sounds = {
     volume: 0.8,
     preload: true,
     }),
+
+    enterClick: new Howl({
+    src: ["./music/projects.ogg"], // cambia por tu archivo
+    volume: 0.7,
+    preload: true,
+    }),
 };
 
 enterButton.addEventListener("click", () => {
-  if (!sounds.backgroundMusic.playing()) {
+    sounds.enterClick.play();
+
+    if (!sounds.backgroundMusic.playing()) {
     sounds.backgroundMusic.play();
-  }
+    }
 
   gsap.to(loadingScreen, {
     opacity: 0,
@@ -687,6 +695,56 @@ function handleSelection(name) {
     console.log('CLICK en:', name);
 }
 
+// Controles de movil
+const mobileControls = {
+  up: document.querySelector(".mobile-control.up-arrow"),
+  left: document.querySelector(".mobile-control.left-arrow"),
+  right: document.querySelector(".mobile-control.right-arrow"),
+  down: document.querySelector(".mobile-control.down-arrow"),
+};
+
+const pressedButtons = {
+  up: false,
+  left: false,
+  right: false,
+  down: false,
+};
+
+Object.entries(mobileControls).forEach(([direction, element]) => {
+  element.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    pressedButtons[direction] = true;
+  });
+
+  element.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    pressedButtons[direction] = false;
+  });
+
+  element.addEventListener("mousedown", (e) => {
+    e.preventDefault();
+    pressedButtons[direction] = true;
+  });
+
+  element.addEventListener("mouseup", (e) => {
+    e.preventDefault();
+    pressedButtons[direction] = false;
+  });
+
+  element.addEventListener("mouseleave", (e) => {
+    pressedButtons[direction] = false;
+  });
+
+  element.addEventListener("touchcancel", (e) => {
+    pressedButtons[direction] = false;
+  });
+});
+
+window.addEventListener("blur", () => {
+  Object.keys(pressedButtons).forEach((key) => {
+    pressedButtons[key] = false;
+  });
+});
 
 function animate() {
     //Camara sigue al personaje
@@ -706,9 +764,52 @@ function animate() {
         character.instance.position.y,
         character.instance.position.z
     );
-        }
+    }
 
+    // --- Movimiento móvil continuo ---
+if (pressedButtons.up) {
+  playerVelocity.x -= MOVE_SPEED;
+  targetRotation = 0;
 
+  if (playerOnFloor) {
+    playerVelocity.y = JUMP_HEIGHT;
+    sounds.playerJump.stop();
+    sounds.playerJump.play();
+  }
+}
+
+if (pressedButtons.down) {
+  playerVelocity.x += MOVE_SPEED;
+  targetRotation = -Math.PI;
+
+  if (playerOnFloor) {
+    playerVelocity.y = JUMP_HEIGHT;
+    sounds.playerJump.stop();
+    sounds.playerJump.play();
+  }
+}
+
+if (pressedButtons.left) {
+  playerVelocity.z += MOVE_SPEED;
+  targetRotation = Math.PI / 2;
+
+  if (playerOnFloor) {
+    playerVelocity.y = JUMP_HEIGHT;
+    sounds.playerJump.stop();
+    sounds.playerJump.play();
+  }
+}
+
+if (pressedButtons.right) {
+  playerVelocity.z -= MOVE_SPEED;
+  targetRotation = -Math.PI / 2;
+
+  if (playerOnFloor) {
+    playerVelocity.y = JUMP_HEIGHT;
+    sounds.playerJump.stop();
+    sounds.playerJump.play();
+  }
+}
 
     updatePlayer();
 
