@@ -42,6 +42,11 @@ const sounds = {
     volume: 0.7,
     preload: true,
     }),
+
+    themeSwitch: new Howl({
+    src: ["./music/projects.ogg"], // pon aquí tu sonido
+    volume: 0.6
+    }),
 };
 
 enterButton.addEventListener("click", () => {
@@ -85,7 +90,27 @@ const playerCollider = new Capsule(
   CAPSULE_RADIUS
 );
 
+const themeToggle = document.getElementById("themeToggle");
 
+let isNight = false;
+
+themeToggle.addEventListener("click", () => {
+    // sonido
+    sounds.themeSwitch.stop();
+    sounds.themeSwitch.play();
+
+    // animación del botón (AZUL ↔ AMARILLO)
+    themeToggle.classList.toggle("active");
+
+    isNight = !isNight; // cambia entre true y false
+
+    if (isNight) {
+        switchToNight();
+    } else {
+        switchToDay();
+    }
+
+});
 
 let playerVelocity = new THREE.Vector3();
 let playerOnFloor = false;
@@ -242,6 +267,10 @@ sun.shadow.camera.bottom = -50;
 sun.shadow.camera.near = 0.2;
 sun.shadow.camera.far = 300;
 sun.shadow.normalBias = 1;
+
+const moonLight = new THREE.DirectionalLight(0x6cb3ff, 0);
+moonLight.position.set(50, 80, -20);
+scene.add(moonLight);
 
 scene.add(sun);
 
@@ -599,9 +628,33 @@ function onKeyDown(event) {
     // character.isMoving = true; // Marcar que el personaje está en movimiento
 }
 
+function switchToNight() {
 
+    // cielo oscuro
+    renderer.setClearColor(0x0b1a2b);
 
+    // bajamos el sol
+    sun.intensity = 0.2;
 
+    // activamos luz azul nocturna
+    moonLight.intensity = 1.2;
+
+    // ambiente más tenue
+    light.intensity = 1;
+
+}
+
+function switchToDay() {
+
+    renderer.setClearColor(0x87ceeb);
+
+    sun.intensity = 2;
+
+    moonLight.intensity = 0;
+
+    light.intensity = 4;
+
+}
 
 // window.addEventListener( 'resize', handleResize );
 window.addEventListener('click', onClick);

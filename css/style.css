@@ -5,6 +5,59 @@
     font-family: "Pixelify Sans", sans-serif;
 }
 
+.theme-mode-toggle-button {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #3b82f6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 9999;
+  transition: all 0.35s ease;
+}
+
+.theme-mode-toggle-button svg {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  transition: all 0.35s ease;
+}
+
+/* estado inicial */
+.first-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.second-icon {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+/* cuando haces click */
+.theme-mode-toggle-button.active {
+  background: #facc15;
+}
+
+.theme-mode-toggle-button.active .first-icon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+
+.theme-mode-toggle-button.active .second-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+
+
+
+
 /* Mobile controls */
 
 .mobile-control {
