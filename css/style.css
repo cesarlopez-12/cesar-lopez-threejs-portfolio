@@ -55,7 +55,68 @@
 }
 
 
+/* 🔥 NECESARIO PARA QUE THREE.JS NO LO TAPE */
+#experience {
+  position: relative;
+  z-index: 1;
+}
 
+canvas {
+  position: relative;
+  z-index: 1;
+}
+
+/* BOTÓN AUDIO */
+.audio-toggle-button{
+  position: absolute;
+  
+  top: 25px;      /* Alineado con el otro botón */
+  right: 105px;
+
+  width: 70px;
+  height: 70px;
+  
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+  z-index: 9999; /* 🔥 esto lo pone encima del 3D */
+
+  color: #ffffff; /* color día por defecto */
+}
+
+/* los iconos */
+.audio-toggle-button svg{
+  position:absolute;
+  width:60px;
+  height:60px;
+}
+
+.audio-toggle-button rect{
+  fill: currentColor;
+}
+
+/* animación */
+.second-icon-two{
+  opacity:0;
+  transform:scale(.4);
+  transition:.3s;
+}
+
+.first-icon-two{
+  transition:.3s;
+}
+
+.audio-toggle-button.muted .first-icon-two{
+  opacity:0;
+  transform:scale(.4);
+}
+
+.audio-toggle-button.muted .second-icon-two{
+  opacity:1;
+  transform:scale(1);
+}
 
 
 /* Mobile controls */

@@ -47,6 +47,12 @@ const sounds = {
     src: ["./music/projects.ogg"], // pon aquí tu sonido
     volume: 0.6
     }),
+
+    audioClick: new Howl({
+    src: ["./music/projects.ogg"], // usa el sonido que quieras
+    volume: 0.7,
+    preload: true,
+    }),
 };
 
 enterButton.addEventListener("click", () => {
@@ -93,6 +99,23 @@ const playerCollider = new Capsule(
 const themeToggle = document.getElementById("themeToggle");
 
 let isNight = false;
+
+const audioToggle = document.getElementById("audioToggle");
+
+let audioEnabled = true;
+
+audioToggle.addEventListener("click", () => {
+    sounds.audioClick.stop();
+    sounds.audioClick.play();
+
+    audioEnabled = !audioEnabled;
+
+    // cambia icono
+    audioToggle.classList.toggle("muted");
+
+    // silencia todo howler
+    Howler.mute(!audioEnabled);
+});
 
 themeToggle.addEventListener("click", () => {
     // sonido
@@ -629,6 +652,7 @@ function onKeyDown(event) {
 }
 
 function switchToNight() {
+    audioToggle.style.color = "#4da6ff";
 
     // cielo oscuro
     renderer.setClearColor(0x0b1a2b);
@@ -645,6 +669,7 @@ function switchToNight() {
 }
 
 function switchToDay() {
+    audioToggle.style.color = "#ffffff";
 
     renderer.setClearColor(0x87ceeb);
 
