@@ -7,49 +7,48 @@ import { Capsule } from "three/addons/math/Capsule.js";
 const loadingScreen = document.getElementById("loadingScreen");
 const loadingText = document.querySelector(".loading-text");
 const enterButton = document.querySelector(".enter-button");
-
 const manager = new THREE.LoadingManager();
 
 // Configuración de sonidos con Howler.js
 const sounds = {
     backgroundMusic: new Howl({
-    src: ["./music/pokemon.ogg"], // cambia si es .ogg
+    src: ["./music/pokemon.ogg"], 
     loop: true,
     volume: 0.3,
     preload: true,
     }),
 
     chestOpen: new Howl({
-    src: ["./music/projects.ogg"], // cambia si es .ogg
+    src: ["./music/projects.ogg"], 
     volume: 0.6,
     preload: true,
     }),
 
     animalJump: new Howl({
-    src: ["./music/music_pokemon.ogg"], // tu archivo
+    src: ["./music/music_pokemon.ogg"], 
     volume: 0.7,
     preload: true,
     }),
     
     playerJump: new Howl({
-    src: ["./music/jumpsfx.ogg"], // tu archivo
+    src: ["./music/jumpsfx.ogg"], 
     volume: 0.8,
     preload: true,
     }),
 
     enterClick: new Howl({
-    src: ["./music/projects.ogg"], // cambia por tu archivo
+    src: ["./music/projects.ogg"], 
     volume: 0.7,
     preload: true,
     }),
 
     themeSwitch: new Howl({
-    src: ["./music/projects.ogg"], // pon aquí tu sonido
+    src: ["./music/projects.ogg"], 
     volume: 0.6
     }),
 
     audioClick: new Howl({
-    src: ["./music/projects.ogg"], // usa el sonido que quieras
+    src: ["./music/projects.ogg"], 
     volume: 0.7,
     preload: true,
     }),
@@ -82,12 +81,11 @@ const animalsToFix = [];
 const animalNames = ['pikachu', 'chick', 'llama', 'duck', 'lapras', 'tortoise', 'cat'];
 
 
-const GRAVITY = 20;
+const GRAVITY = 25;
 const CAPSULE_RADIUS = 2;
 const CAPSULE_HEIGHT = 1.55;
 const JUMP_HEIGHT = 10;
 const MOVE_SPEED = 3;
-
 
 const colliderOctree = new Octree();
 const playerCollider = new Capsule(
@@ -97,11 +95,9 @@ const playerCollider = new Capsule(
 );
 
 const themeToggle = document.getElementById("themeToggle");
-
 let isNight = false;
 
 const audioToggle = document.getElementById("audioToggle");
-
 let audioEnabled = true;
 
 audioToggle.addEventListener("click", () => {
@@ -109,55 +105,42 @@ audioToggle.addEventListener("click", () => {
     sounds.audioClick.play();
 
     audioEnabled = !audioEnabled;
-
-    // cambia icono
     audioToggle.classList.toggle("muted");
-
-    // silencia todo howler
     Howler.mute(!audioEnabled);
 });
 
 themeToggle.addEventListener("click", () => {
-    // sonido
     sounds.themeSwitch.stop();
     sounds.themeSwitch.play();
 
-    // animación del botón (AZUL ↔ AMARILLO)
     themeToggle.classList.toggle("active");
-
-    isNight = !isNight; // cambia entre true y false
+    isNight = !isNight; 
 
     if (isNight) {
         switchToNight();
     } else {
         switchToDay();
     }
-
 });
 
 let playerVelocity = new THREE.Vector3();
 let playerOnFloor = false;
 let originalCharacterPosition = new THREE.Vector3();
-
-
-/*let isMoving = false;*/
-
 let characterMesh = null;
 let characterContainer = new THREE.Group();
 scene.add(characterContainer);
 
-
 let character = {
     instance: null,
+    isMoving: false
     // moveDistance: 5,
     // jumpHeight: 4,
-    // moveDuration: 0.3, // Duración del movimiento en segundos
-    isMoving: false
-    //moveDistance: 0.2,
-    //moveDuration: 0.4,
-    //jumpHeight: 0.5,
-    /*speed: 0.4, // unidades por segundo*/
-    /*isMoving: false*/
+    // moveDuration: 0.3, Duración del movimiento en segundos
+    // moveDistance: 0.2,
+    // moveDuration: 0.4,
+    // jumpHeight: 0.5,
+    // speed: 0.4, unidades por segundo
+    // isMoving: false
 };
 
 let targetRotation = 0;
@@ -167,7 +150,6 @@ const sizes = {
     width: window.innerWidth,
     height: window.innerHeight,
 };
-
 
 const loader = new GLTFLoader(manager);
 
@@ -186,14 +168,12 @@ enterButton.addEventListener("click", () => {
   });
 });
 
-
-loader.load('./public/ProyectoWebThree.glb', function (gltf) {
+loader.load('./public/ProyectoWeb.glb', function (gltf) {
 
     scene.add(gltf.scene);
 
     gltf.scene.traverse(child => {
 
-        // SOLO guardar referencia — NO mover nada aquí
         if (child.name === 'character') {
             characterMesh = child;
             playerCollider.start.copy(child.position).add(new THREE.Vector3(0, -CAPSULE_RADIUS / 2, 0));
@@ -219,41 +199,31 @@ loader.load('./public/ProyectoWebThree.glb', function (gltf) {
                 animalsToFix.push(root);
             }
         }
-
     });
 
     animalsToFix.forEach(animal => {
 
         const container = new THREE.Group();
         scene.add(container);
-
         const box = new THREE.Box3().setFromObject(animal);
         const center = new THREE.Vector3();
         box.getCenter(center);
 
-        // Centrar modelo dentro del contenedor
         animal.position.sub(center);
         container.add(animal);
 
-        // Regresar a su posición original
         container.position.copy(center);
-
         centeredAnimals[animal.name] = container;
-
-        console.log("Animal listo:", animal.name);
     });
 
     setupCharacter();
 
 }, undefined, function (error) {
-
     console.error(error);
-
 });
 
 
 // Te muestra los objetos y sus padres
-
 /*
 loader.load('./public/ProyectoWeb.glb', function (gltf) {
     scene.add(gltf.scene);
@@ -269,12 +239,10 @@ loader.load('./public/ProyectoWeb.glb', function (gltf) {
         }
     });
 });
-
 */
 
 const light = new THREE.AmbientLight(0x404040, 4); // soft white light
 scene.add(light);
-
 const sun = new THREE.DirectionalLight(0xFFFFFF, 2);
 sun.castShadow = true;
 sun.position.set(-120, 100, 0);
@@ -298,10 +266,7 @@ scene.add(moonLight);
 scene.add(sun);
 
 const helper = new THREE.DirectionalLightHelper(sun, 5);
-scene.add(helper);
-
-// const shadowHelper = new THREE.CameraHelper( sun.shadow.camera );
-// scene.add( shadowHelper );
+// scene.add(helper);
 
 const camera = new THREE.OrthographicCamera(
     -50 * (sizes.width / sizes.height),
@@ -312,12 +277,23 @@ const camera = new THREE.OrthographicCamera(
     1000
 );
 
+function onWindowResize() {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+}
+
+window.addEventListener('resize', onWindowResize);
 
 const canvas = document.querySelector('#experience-canvas');
-
 const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+document.body.appendChild(renderer.domElement);
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.shadowMap.enabled = true;
 renderer.toneMapping = THREE.ReinhardToneMapping;
@@ -379,14 +355,10 @@ const modalProjectDescription = document.querySelector(
     '.modal-project-description'
 );
 
-
 const modalExistButton = document.querySelector('.modal-exit-button');
 modalExistButton.addEventListener('click', () => {
     modal.classList.add('hidden');
 });
-
-
-
 
 function showModal(id) {
     const content = modalContent[id];
@@ -395,10 +367,6 @@ function showModal(id) {
         modalProjectDescription.innerHTML = content.content;
         modal.classList.remove('hidden');
     }
-}
-
-function hideModal() {
-    modal.classList.toggle('hidden');
 }
 
 const intersectedObjectNames = [
@@ -414,71 +382,15 @@ const intersectedObjectNames = [
     'duck',
     'chick',
     'coffee_chest'
-
 ];
 
-console.log(renderer);
-
-/*camera.position.x = 189.2549796831433;
-camera.position.y = 104.78391292547539;
-camera.position.z = -37.801902476570845;*/
-
+// console.log(renderer);
 const controls = new OrbitControls(camera, canvas);
-
 camera.position.set(189.25, 104.78, -71.80);
 camera.zoom = 2.5;
 camera.updateProjectionMatrix();
 controls.target.set(80, -30, -190);
 controls.update();
-
-/*
-function moverCharacter(targetPosition, targetRotation) {
-
-    if (character.isMoving) return;
-
-    character.isMoving = true;
-
-    
-    let rotationDiff =
-    (((targetRotation - characterContainer.rotation.y) % (2 * Math.PI)) +
-    (2 * Math.PI)) % (2 * Math.PI) -
-    Math.PI;
-
-    let finalRotation = characterContainer.rotation.y + rotationDiff;
-
-    const startY = characterContainer.position.y;
-
-    const t1 = gsap.timeline({
-        onComplete: () => {
-            character.isMoving = false;
-        }
-    });
-
-    
-    t1.to(characterContainer.position, {
-        x: targetPosition.x,
-        z: targetPosition.z,
-        duration: character.moveDuration,
-        ease: "power2.inOut"
-    });
-
-    
-    t1.to(characterContainer.rotation, {
-        y: finalRotation,
-        duration: 0.1,
-        ease: "power2.inOut"
-    }, 0);
-
-    
-    t1.to(characterContainer.position, {
-        y: startY + character.jumpHeight,
-        duration: character.moveDuration / 2,
-        ease: "power1.out",
-        yoyo: true,
-        repeat: 1
-    }, '<');
-}
-*/
 
 function setupCharacter() {
 
@@ -487,51 +399,34 @@ function setupCharacter() {
         return;
     }
 
-    //Crear caja del modelo
     const box = new THREE.Box3().setFromObject(characterMesh);
     const center = new THREE.Vector3();
     box.getCenter(center);
-
-    //Mover el modelo al origen (centrarlo)
     characterMesh.position.sub(center);
-
-    //Meter el modelo dentro del contenedor
     characterContainer.add(characterMesh);
-
-    //Colocar el contenedor donde estaba el personaje
     characterContainer.position.copy(center);
     originalCharacterPosition.copy(characterContainer.position);
 
-    // 🔥 SINCRONIZAR COLLIDER CON EL PERSONAJE
     playerCollider.start.copy(characterContainer.position);
     playerCollider.end.copy(characterContainer.position).add(
         new THREE.Vector3(0, CAPSULE_HEIGHT, 0)
     );
 
-    //Ahora el personaje REAL será el contenedor
     character.instance = characterContainer;
-
-    //Ajustar altura (puedes cambiar este número)
-   //characterContainer.position.y += 9;
 }
 
 function playerCollisions() {
   const result = colliderOctree.capsuleIntersect(playerCollider);
   playerOnFloor = false;
-
   if (result) {
     playerOnFloor = result.normal.y > 0;
     playerCollider.translate(result.normal.multiplyScalar(result.depth));
 
     if (playerOnFloor) {
-      //character.isMoving = false;
       playerVelocity.y = 0;
-      //playerVelocity.x = 0;
-      //playerVelocity.z = 0;
     }
   }
 }
-
 
 function updatePlayer() {
   if (!character.instance) return;
@@ -551,21 +446,16 @@ function updatePlayer() {
   }
 
   playerCollider.translate(playerVelocity.clone().multiplyScalar(0.035));
-
   playerCollisions();
-
   character.instance.position.copy(playerCollider.start);
   
-  // character.instance.position.y += CAPSULE_HEIGHT; // Ajustar para que el personaje esté a la altura correcta
   character.instance.position.y = playerCollider.start.y + CAPSULE_HEIGHT;
-
   let rotationDiff =
     ((((targetRotation - character.instance.rotation.y) % (2 * Math.PI)) +
       3 * Math.PI) %
       (2 * Math.PI)) -
     Math.PI;
   let finalRotation = character.instance.rotation.y + rotationDiff;
-
   character.instance.rotation.y = THREE.MathUtils.lerp(
     character.instance.rotation.y,
     finalRotation,
@@ -585,24 +475,14 @@ function respawnCharacter() {
     characterContainer.position.copy(originalCharacterPosition);
 }
 
-
 function onKeyDown(event) {
-    
-    // if (character.isMoving) return; // Evitar iniciar otro movimiento mientras el personaje ya se está moviendo
 
-    /*const targetPosition = new THREE.Vector3().copy(character.instance.position);
-    let targetRotation = 0;*/
-
-    // const targetPosition = characterContainer.position.clone();
-
-    // let targetRotation = characterContainer.rotation.y;
-
-    console.log(event); 
+    // console.log(event); 
     switch (event.key.toLowerCase()) {
         case 'd':
         case 'arrowright':
             playerVelocity.z -= MOVE_SPEED;
-            targetRotation = - Math.PI / 2; // 90 grados en radianes
+            targetRotation = - Math.PI / 2;
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
                 sounds.playerJump.stop();
@@ -613,7 +493,7 @@ function onKeyDown(event) {
         case 'a':
         case 'arrowleft':
             playerVelocity.z += MOVE_SPEED;
-            targetRotation = Math.PI / 2; // 180 grados en radianes
+            targetRotation = Math.PI / 2; 
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
                 sounds.playerJump.stop();
@@ -624,7 +504,7 @@ function onKeyDown(event) {
         case 'w':
         case 'arrowup':
             playerVelocity.x -= MOVE_SPEED;
-            targetRotation = 0; // 0 grados en radianes
+            targetRotation = 0; 
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
                 sounds.playerJump.stop();
@@ -635,7 +515,7 @@ function onKeyDown(event) {
         case 's':
         case 'arrowdown':
             playerVelocity.x += MOVE_SPEED;
-            targetRotation = -Math.PI; // 270 grados en radianes 
+            targetRotation = -Math.PI; 
             if (playerOnFloor) {
                 playerVelocity.y = JUMP_HEIGHT;
                 sounds.playerJump.stop();
@@ -644,59 +524,40 @@ function onKeyDown(event) {
             }       
             break
         default:
-            return; // Salir si no es una tecla de movimiento
+            return; 
     }
-    // moverCharacter(targetPosition, targetRotation);
-    // playerVelocity.y = JUMP_HEIGHT;
-    // character.isMoving = true; // Marcar que el personaje está en movimiento
 }
 
 function switchToNight() {
     audioToggle.style.color = "#4da6ff";
-
-    // cielo oscuro
     renderer.setClearColor(0x0b1a2b);
 
-    // bajamos el sol
     sun.intensity = 0.2;
-
-    // activamos luz azul nocturna
     moonLight.intensity = 1.2;
-
-    // ambiente más tenue
     light.intensity = 1;
 
 }
 
 function switchToDay() {
     audioToggle.style.color = "#ffffff";
-
     renderer.setClearColor(0x87ceeb);
-
     sun.intensity = 2;
 
     moonLight.intensity = 0;
-
     light.intensity = 4;
-
 }
 
-// window.addEventListener( 'resize', handleResize );
 window.addEventListener('click', onClick);
-// window.addEventListener( 'pointermove', onPointerMove );
 window.addEventListener('keydown', onKeyDown);
 
 function jumpCharacter(name) {
-    
     if (!sounds.animalJump.playing()) {
         sounds.animalJump.play();
     }
-
     const obj = centeredAnimals[name];
     if (!obj) return;
 
     const startY = obj.position.y;
-
     const tl = gsap.timeline();
 
     tl.to(obj.scale, {
@@ -735,12 +596,9 @@ function onClick(event) {
     const intersects = raycaster.intersectObjects(intersectObjects, true);
     if (intersects.length === 0) return;
 
-    // subir hasta encontrar el grupo principal
     const root = getRootObject(intersects[0].object);
     if (!root) return;
-    console.log('CLICK en:', root.name);
-
-    // Verificar si el objeto intersectado es uno de los objetos interactivos
+    // console.log('CLICK en:', root.name);
 
     if (modalContent[root.name]) {
         
@@ -755,10 +613,8 @@ function onClick(event) {
     jumpCharacter(root.name);
     return;
     }
-
 }
 
-// función de manejo de selección
 function getRootObject(object) {
     while (
         object.parent &&
@@ -769,11 +625,6 @@ function getRootObject(object) {
     return object.parent || object;
 }
 
-function handleSelection(name) {
-    console.log('CLICK en:', name);
-}
-
-// Controles de movil
 const mobileControls = {
   up: document.querySelector(".mobile-control.up-arrow"),
   left: document.querySelector(".mobile-control.left-arrow"),
@@ -825,18 +676,15 @@ window.addEventListener("blur", () => {
 });
 
 function animate() {
-    //Camara sigue al personaje
-        if (character.instance) {
+    if (character.instance) {
         const targetCameraPosition = new THREE.Vector3(
         character.instance.position.x + cameraOffset.x,
-        cameraOffset.y, // altura fija
+        cameraOffset.y,
         character.instance.position.z + cameraOffset.z
     );
 
-    // Movimiento suave
     camera.position.lerp(targetCameraPosition, 0.1);
 
-    // Mirar al personaje (sin modificar Y)
     camera.lookAt(
         character.instance.position.x,
         character.instance.position.y,
@@ -844,32 +692,31 @@ function animate() {
     );
     }
 
-    // --- Movimiento móvil continuo ---
-if (pressedButtons.up) {
-  playerVelocity.x -= MOVE_SPEED;
-  targetRotation = 0;
+    if (pressedButtons.up) {
+        playerVelocity.x -= MOVE_SPEED;
+        targetRotation = 0;
 
-  if (playerOnFloor) {
-    playerVelocity.y = JUMP_HEIGHT;
-    sounds.playerJump.stop();
-    sounds.playerJump.play();
-  }
-}
+    if (playerOnFloor) {
+        playerVelocity.y = JUMP_HEIGHT;
+        sounds.playerJump.stop();
+        sounds.playerJump.play();
+    }
+    }
 
-if (pressedButtons.down) {
-  playerVelocity.x += MOVE_SPEED;
-  targetRotation = -Math.PI;
+    if (pressedButtons.down) {
+        playerVelocity.x += MOVE_SPEED;
+        targetRotation = -Math.PI;
 
-  if (playerOnFloor) {
-    playerVelocity.y = JUMP_HEIGHT;
-    sounds.playerJump.stop();
-    sounds.playerJump.play();
-  }
+    if (playerOnFloor) {
+        playerVelocity.y = JUMP_HEIGHT;
+        sounds.playerJump.stop();
+        sounds.playerJump.play();
+    }
 }
 
 if (pressedButtons.left) {
-  playerVelocity.z += MOVE_SPEED;
-  targetRotation = Math.PI / 2;
+    playerVelocity.z += MOVE_SPEED;
+    targetRotation = Math.PI / 2;
 
   if (playerOnFloor) {
     playerVelocity.y = JUMP_HEIGHT;
@@ -879,35 +726,29 @@ if (pressedButtons.left) {
 }
 
 if (pressedButtons.right) {
-  playerVelocity.z -= MOVE_SPEED;
-  targetRotation = -Math.PI / 2;
+    playerVelocity.z -= MOVE_SPEED;
+    targetRotation = -Math.PI / 2;
 
-  if (playerOnFloor) {
-    playerVelocity.y = JUMP_HEIGHT;
-    sounds.playerJump.stop();
-    sounds.playerJump.play();
-  }
+    if (playerOnFloor) {
+        playerVelocity.y = JUMP_HEIGHT;
+        sounds.playerJump.stop();
+        sounds.playerJump.play();
+    }
 }
-
     updatePlayer();
-
-    // console.log(camera.position);
     raycaster.setFromCamera(Pointer, camera);
 
     const intersects = raycaster.intersectObjects(intersectObjects, true);
-    // const root = getRootObject(intersects[0].object);
-
     if (intersects.length > 0) {
-        const root = getRootObject(intersects[0].object);
 
+    const root = getRootObject(intersects[0].object);
+
+    if (intersectedObjectNames.includes(root.name)) {
         document.body.style.cursor = 'pointer';
-        console.log('Hover sobre:', root.name);
     } else {
         document.body.style.cursor = 'default';
     }
-
-    // console.log(camera.position);
-
+}
     renderer.render(scene, camera);
 }
 renderer.setAnimationLoop(animate);
