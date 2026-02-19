@@ -168,7 +168,7 @@ enterButton.addEventListener("click", () => {
   });
 });
 
-loader.load('./public/ProyectoWeb.glb', function (gltf) {
+loader.load('./ProyectoWeb.glb', function (gltf) {
 
     scene.add(gltf.scene);
 
